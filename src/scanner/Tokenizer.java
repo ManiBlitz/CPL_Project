@@ -14,6 +14,7 @@ package scanner;
 
 import exceptionsPack.ParserException;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -44,25 +45,32 @@ public class Tokenizer {
     
     private static final String IDENTIFIER          = "[a-zA-Z][a-zA-Z0-9_]*";
     private static final String LITERAL_INTEGER     = "[0-9]+";
-    private static final String ASSIGNMENT_OPERATOR = ".*[=].*";
-    private static final String LE_OPERATOR         = ".*[<][=].*";
-    private static final String LT_OPERATOR         = ".*[<].*";
-    private static final String GE_OPERATOR         = ".*[=][>].*";
-    private static final String GT_OPERATOR         = ".*[>].*";
-    private static final String EQ_OPERATOR         = ".*[=][=].*";
-    private static final String NE_OPERATOR         = ".*[~][=].*";
+    private static final String ASSIGNMENT_OPERATOR = "[=]";
+    private static final String LE_OPERATOR         = "[<][=]";
+    private static final String LT_OPERATOR         = "[<]";
+    private static final String GE_OPERATOR         = "[=][>]";
+    private static final String GT_OPERATOR         = "[>]";
+    private static final String EQ_OPERATOR         = "[=][=]";
+    private static final String NE_OPERATOR         = "[~][=]";
     private static final String ADD_OPERATOR        = "[+]";
-    private static final String SUB_OPERATOR        = "[-][a-zA-Z]?[a-zA-Z0-9_]*";
-    private static final String MUL_OPERATOR        = "[*]";
-    private static final String DIV_OPERATOR        = "[/]";
-    private static final String LITERAL_TEXT        = "[\"].*?[\"]"; 
-    private static final String LITERAL_QUOTE       = "[\"].*|.*[\"]";
-    private static final String LINE_COMMENT        = "[/][/].*";
-    private static final String BEGIN_COMMENT       = "[/][\\*].*";
-    private static final String END_COMMENT         = ".*[\\*][/]";
-    private static final String LITERAL_COMMA       = ".*[,]";
-    private static final String ARRAY_DEF           = ".*[\\[]"+IDENTIFIER+"[\\]]|.*[\\[][0-9]*[\\]]|.*[\\[][\\]]";
-    private static final String ARRAY_INDEX         = IDENTIFIER+ARRAY_DEF;
+    private static final String SUB_OPERATOR        = "[-]";
+    private static final String MUL_OPERATOR        = "[^/|^*][*][^/|^*]";
+    private static final String DIV_OPERATOR        = "[^/|^*][/][^/|^*]";
+    private static final String POW_OPERATOR        = "[\\^]";
+    //private static final String LITERAL_TEXT        = "[\"].*?[\"]"; 
+    private static final String LITERAL_QUOTE       = "[\"]";
+    private static final String LINE_COMMENT        = "[/][/]";
+    private static final String BEGIN_COMMENT       = "[/][\\*]";
+    private static final String END_COMMENT         = "[\\*][/]";
+    private static final String LITERAL_COMMA       = "[,]";
+    //private static final String ARRAY_DEF           = ".*[\\[]"+IDENTIFIER+"[\\]]|.*[\\[][0-9]*[\\]]|.*[\\[][\\]]";
+    //private static final String ARRAY_INDEX         = IDENTIFIER+ARRAY_DEF;
+    private static final String OPEN_BRACKET        = "[(]";
+    private static final String CLOSE_BRACKET       = "[)]";
+    private static final String OPEN_BRACE          = "[\\[]";
+    private static final String CLOSE_BRACE         = "[\\]]";
+    private static final String WHITE_SPACE         = "[\t]+|[\r]+|[\f]+|[ ]+";
+    private static final String DOT_PTS             = "[.]";
     private static final String OTHERS              = ".+";
 
     //==========================================================================
@@ -103,7 +111,7 @@ public class Tokenizer {
     private static final String RSVP_RETU = "return";
     private static final String RSVP_DEFI = "define";
     private static final String RSVP_IMPO = "import";
-    private static final String RSVP_BLAN = "";
+    private static final String RSVP_COLON= ":";
     private static final String RSVP_DO   = "do";
                    
     //==========================================================================
@@ -160,7 +168,7 @@ public class Tokenizer {
         String s = new String(str);
         int col_num = 1;
         
-        for(String splice : s.split("[\t]+|[\r]+|[\f]+|[ ]+")) {
+        /*for(String splice : s.split("[\t]+|[\r]+|[\f]+|[ ]+")) {
             boolean match = false;
             for (TokenInfo info : tokenInfos) {
                 if (splice.matches(info.regex.pattern())) {
@@ -171,9 +179,27 @@ public class Tokenizer {
             }
             if (!match) throw new ParserException("\""+str+"\" : Unexpected character in input: \""+splice+"\" at line "+line_number+" col "+col_num);
             col_num++;
+        }*/
+        while (!s.equals("")) {
+            boolean match = false;
+            for (TokenInfo info : tokenInfos) {
+                Matcher m = info.regex.matcher(s);
+                if (m.find()) {
+                    match = true;
+
+                    String tok = m.group().trim();
+                    tokens.add(new Token(info.token, tok, col_num, line_number));
+
+                    s = m.replaceFirst("");
+                    break;
+                }
+            }
+            if (!match) throw new ParserException("Unexpected character in input: "+s);
+            col_num++;
         }
         
     }
+        
     
     // =========================================================================
     // LinkedList<Token> getTokens()
@@ -232,7 +258,7 @@ public class Tokenizer {
         tokenizer.add(RSVP_DEFI, 5050);
         tokenizer.add(RSVP_IMPO, 5051);
         tokenizer.add(RSVP_DO  , 5052);
-        tokenizer.add(RSVP_BLAN, 5053);
+        tokenizer.add(RSVP_COLON,5053);
         
         //======================================================================
         //Operators
@@ -248,17 +274,21 @@ public class Tokenizer {
         tokenizer.add(ASSIGNMENT_OPERATOR,  5037); 
         tokenizer.add(ADD_OPERATOR,         5038);  
         tokenizer.add(SUB_OPERATOR,         5039);   
-        tokenizer.add(MUL_OPERATOR,         5040);   
-        tokenizer.add(DIV_OPERATOR,         5041);  
-        tokenizer.add(LITERAL_TEXT,         5042); 
-        tokenizer.add(ARRAY_INDEX,          5043);
+        tokenizer.add(MUL_OPERATOR,         5048);   
+        tokenizer.add(DIV_OPERATOR,         5049);  
+        tokenizer.add(OPEN_BRACKET,         5042); 
+        tokenizer.add(CLOSE_BRACKET,        5043);
         tokenizer.add(LITERAL_QUOTE,        5044);
         tokenizer.add(LITERAL_COMMA,        5045);
-        tokenizer.add(LINE_COMMENT,         5046);
-        tokenizer.add(BEGIN_COMMENT,        5047);
-        tokenizer.add(END_COMMENT,          5048);
-        tokenizer.add(IDENTIFIER,           5049);
-        tokenizer.add(ARRAY_DEF,            5050);
+        tokenizer.add(LINE_COMMENT,         5041);
+        tokenizer.add(BEGIN_COMMENT,        5040);
+        tokenizer.add(END_COMMENT,          5046);
+        tokenizer.add(IDENTIFIER,           5047);
+        tokenizer.add(OPEN_BRACE,           5050);
+        tokenizer.add(CLOSE_BRACE,          5054);
+        tokenizer.add(WHITE_SPACE,          5055);
+        tokenizer.add(DOT_PTS,              5056);
+        tokenizer.add(POW_OPERATOR,         5057);
         tokenizer.add(OTHERS,               6000);
         
         
