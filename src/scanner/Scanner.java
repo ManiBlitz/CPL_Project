@@ -120,15 +120,15 @@ public class Scanner {
     // =========================================================================
     
     public static void main(String[]args){
-        //if(args.length==2){
+        if(args.length==2){
             try{
-                Scanner scan = new Scanner("sclex1.scl");
+                Scanner scan = new Scanner(args[1]);
             }catch(EOFException e){
                 System.out.println("\n\n //=============EOF==============//");
             }
-        /*}else{
+        }else{
             System.out.println("\n\n ===> Error while reading. No file as input. Please enter a file name with extension .scl");
-        }*/
+        }
     }
     
 }
