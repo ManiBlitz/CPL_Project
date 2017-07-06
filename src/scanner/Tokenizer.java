@@ -57,14 +57,11 @@ public class Tokenizer {
     private static final String MUL_OPERATOR        = "[^/|^*][*][^/|^*]";
     private static final String DIV_OPERATOR        = "[^/|^*][/][^/|^*]";
     private static final String POW_OPERATOR        = "[\\^]";
-    //private static final String LITERAL_TEXT        = "[\"].*?[\"]"; 
     private static final String LITERAL_QUOTE       = "[\"]";
     private static final String LINE_COMMENT        = "[/][/]";
     private static final String BEGIN_COMMENT       = "[/][\\*]";
     private static final String END_COMMENT         = "[\\*][/]";
     private static final String LITERAL_COMMA       = "[,]";
-    //private static final String ARRAY_DEF           = ".*[\\[]"+IDENTIFIER+"[\\]]|.*[\\[][0-9]*[\\]]|.*[\\[][\\]]";
-    //private static final String ARRAY_INDEX         = IDENTIFIER+ARRAY_DEF;
     private static final String OPEN_BRACKET        = "[(]";
     private static final String CLOSE_BRACKET       = "[)]";
     private static final String OPEN_BRACE          = "[\\[]";
@@ -111,8 +108,92 @@ public class Tokenizer {
     private static final String RSVP_RETU = "return";
     private static final String RSVP_DEFI = "define";
     private static final String RSVP_IMPO = "import";
-    private static final String RSVP_COLON= ":";
+    private static final String RSVP_COLO = ":";
     private static final String RSVP_DO   = "do";
+    
+    //==========================================================================
+    //LEXICAL RULES NUMBERS
+    //Each token has a code that is associated to it
+    //It will be used in the parser definition for syntax analysis
+    //The different codes will be associated to the token regex in key list
+    //==========================================================================
+    
+    public static final int IDENTIFIER_N            = 5047;
+    public static final int LITERAL_INTEGER_N       = 5030;
+    public static final int ASSIGNMENT_OPERATOR_N   = 5037;
+    public static final int LE_OPERATOR_N           = 5032;
+    public static final int LT_OPERATOR_N           = 5033;
+    public static final int GE_OPERATOR_N           = 5034;
+    public static final int GT_OPERATOR_N           = 5035;
+    public static final int EQ_OPERATOR_N           = 5031;
+    public static final int NE_OPERATOR_N           = 5036;
+    public static final int ADD_OPERATOR_N          = 5038;
+    public static final int SUB_OPERATOR_N          = 5039;
+    public static final int MUL_OPERATOR_N          = 5048;
+    public static final int DIV_OPERATOR_N          = 5049;
+    public static final int POW_OPERATOR_N          = 5057;
+    public static final int LITERAL_QUOTE_N         = 5044;
+    public static final int LINE_COMMENT_N          = 5041;
+    public static final int BEGIN_COMMENT_N         = 5040;
+    public static final int END_COMMENT_N           = 5046;
+    public static final int LITERAL_COMMA_N         = 5045;
+    public static final int OPEN_BRACKET_N          = 5042;
+    public static final int CLOSE_BRACKET_N         = 5043;
+    public static final int OPEN_BRACE_N            = 5050;
+    public static final int CLOSE_BRACE_N           = 5054;
+    public static final int WHITE_SPACE_N           = 5055;
+    public static final int DOT_PTS_N               = 5056;
+    
+    //==========================================================================
+    //RESERVED WORDS NUMBERS
+    //Each reserved has a code that is associated to it
+    //It will be used in the parser definition for syntax analysis
+    //The different codes will be associated to the token regex in key list
+    //==========================================================================
+    
+    public static final int RSVP_SPEC_N = 5001;
+    public static final int RSVP_SYMB_N = 5002;
+    public static final int RSVP_FOWA_N = 5003;
+    public static final int RSVP_REFE_N = 5004;
+    public static final int RSVP_FUNC_N = 5005;
+    public static final int RSVP_PRIN_N = 5006;
+    public static final int RSVP_ARRA_N = 5007;
+    public static final int RSVP_TYPE_N = 5008;
+    public static final int RSVP_STRU_N = 5009;
+    public static final int RSVP_INTE_N = 5010;
+    public static final int RSVP_ENUM_N = 5011;
+    public static final int RSVP_GLOB_N = 5012;
+    public static final int RSVP_DECL_N = 5013;
+    public static final int RSVP_IMPL_N = 5014;
+    public static final int RSVP_MAIN_N = 5015;
+    public static final int RSVP_PARA_N = 5016;
+    public static final int RSVP_CONS_N = 5017;
+    public static final int RSVP_BEGI_N = 5018;
+    public static final int RSVP_ENDF_N = 5019;
+    public static final int RSVP_ENDI_N = 5020;
+    public static final int RSVP_IF_N   = 5021;
+    public static final int RSVP_THEN_N = 5022;
+    public static final int RSVP_ELSE_N = 5023;
+    public static final int RSVP_REPE_N = 5024;
+    public static final int RSVP_UNTI_N = 5025;
+    public static final int RSVP_ENDR_N = 5026;
+    public static final int RSVP_DISP_N = 5027;
+    public static final int RSVP_SET_N  = 5028;
+    public static final int RSVP_RETU_N = 5029;
+    public static final int RSVP_DEFI_N = 5050;
+    public static final int RSVP_IMPO_N = 5051;
+    public static final int RSVP_COLO_N = 5053;
+    public static final int RSVP_DO_N   = 5052;
+    
+    
+    //==========================================================================
+    //Special lexical Rule
+    //EPSILON
+    //Enables to define the end of a recursive expression
+    //Will be used in the parser
+    //==========================================================================
+    
+    public static final int EPSILON = 0;
                    
     //==========================================================================
     //tokenInfos
@@ -168,18 +249,6 @@ public class Tokenizer {
         String s = new String(str);
         int col_num = 1;
         
-        /*for(String splice : s.split("[\t]+|[\r]+|[\f]+|[ ]+")) {
-            boolean match = false;
-            for (TokenInfo info : tokenInfos) {
-                if (splice.matches(info.regex.pattern())) {
-                  match = true;
-                  tokens.add(new Token(info.token, splice,col_num,line_number));
-                  break;
-                }
-            }
-            if (!match) throw new ParserException("\""+str+"\" : Unexpected character in input: \""+splice+"\" at line "+line_number+" col "+col_num);
-            col_num++;
-        }*/
         while (!s.equals("")) {
             boolean match = false;
             for (TokenInfo info : tokenInfos) {
@@ -188,8 +257,11 @@ public class Tokenizer {
                     match = true;
 
                     String tok = m.group().trim();
-                    tokens.add(new Token(info.token, tok, col_num, line_number));
-
+                    if(info.token != WHITE_SPACE_N){
+                        tokens.add(new Token(info.token, tok, col_num, line_number));
+                    }else{
+                        col_num--;
+                    }
                     s = m.replaceFirst("");
                     break;
                 }
@@ -226,69 +298,69 @@ public class Tokenizer {
         //Reserved Words
         //======================================================================
         
-        tokenizer.add(RSVP_SPEC, 5001);       
-        tokenizer.add(RSVP_SYMB, 5002);       
-        tokenizer.add(RSVP_FOWA, 5003);       
-        tokenizer.add(RSVP_REFE, 5004);       
-        tokenizer.add(RSVP_FUNC, 5005);       
-        tokenizer.add(RSVP_PRIN, 5006);       
-        tokenizer.add(RSVP_ARRA, 5007);       
-        tokenizer.add(RSVP_TYPE, 5008);       
-        tokenizer.add(RSVP_STRU, 5009);
-        tokenizer.add(RSVP_INTE, 5010); 
-        tokenizer.add(RSVP_ENUM, 5011); 
-        tokenizer.add(RSVP_GLOB, 5012);   
-        tokenizer.add(RSVP_DECL, 5013);  
-        tokenizer.add(RSVP_IMPL, 5014);   
-        tokenizer.add(RSVP_MAIN, 5015);     
-        tokenizer.add(RSVP_PARA, 5016);   
-        tokenizer.add(RSVP_CONS, 5017);     
-        tokenizer.add(RSVP_BEGI, 5018);     
-        tokenizer.add(RSVP_ENDF, 5019);   
-        tokenizer.add(RSVP_ENDI, 5020);   
-        tokenizer.add(RSVP_IF,   5021);    
-        tokenizer.add(RSVP_THEN, 5022);    
-        tokenizer.add(RSVP_ELSE, 5023);   
-        tokenizer.add(RSVP_REPE, 5024);     
-        tokenizer.add(RSVP_UNTI, 5025);    
-        tokenizer.add(RSVP_ENDR, 5026);    
-        tokenizer.add(RSVP_DISP, 5027);   
-        tokenizer.add(RSVP_SET,  5028);   
-        tokenizer.add(RSVP_RETU, 5029);
-        tokenizer.add(RSVP_DEFI, 5050);
-        tokenizer.add(RSVP_IMPO, 5051);
-        tokenizer.add(RSVP_DO  , 5052);
-        tokenizer.add(RSVP_COLON,5053);
+        tokenizer.add(RSVP_SPEC, RSVP_SPEC_N);       
+        tokenizer.add(RSVP_SYMB, RSVP_SYMB_N);       
+        tokenizer.add(RSVP_FOWA, RSVP_FOWA_N);       
+        tokenizer.add(RSVP_REFE, RSVP_REFE_N);       
+        tokenizer.add(RSVP_FUNC, RSVP_FUNC_N);       
+        tokenizer.add(RSVP_PRIN, RSVP_PRIN_N);       
+        tokenizer.add(RSVP_ARRA, RSVP_ARRA_N);       
+        tokenizer.add(RSVP_TYPE, RSVP_TYPE_N);       
+        tokenizer.add(RSVP_STRU, RSVP_STRU_N);
+        tokenizer.add(RSVP_INTE, RSVP_INTE_N); 
+        tokenizer.add(RSVP_ENUM, RSVP_ENUM_N); 
+        tokenizer.add(RSVP_GLOB, RSVP_GLOB_N);   
+        tokenizer.add(RSVP_DECL, RSVP_DECL_N);  
+        tokenizer.add(RSVP_IMPL, RSVP_IMPL_N);   
+        tokenizer.add(RSVP_MAIN, RSVP_MAIN_N);     
+        tokenizer.add(RSVP_PARA, RSVP_PARA_N);   
+        tokenizer.add(RSVP_CONS, RSVP_CONS_N);     
+        tokenizer.add(RSVP_BEGI, RSVP_BEGI_N);     
+        tokenizer.add(RSVP_ENDF, RSVP_ENDF_N);   
+        tokenizer.add(RSVP_ENDI, RSVP_ENDI_N);   
+        tokenizer.add(RSVP_IF,   RSVP_IF_N  );    
+        tokenizer.add(RSVP_THEN, RSVP_THEN_N);    
+        tokenizer.add(RSVP_ELSE, RSVP_ELSE_N);   
+        tokenizer.add(RSVP_REPE, RSVP_REPE_N);     
+        tokenizer.add(RSVP_UNTI, RSVP_UNTI_N);    
+        tokenizer.add(RSVP_ENDR, RSVP_ENDR_N);    
+        tokenizer.add(RSVP_DISP, RSVP_DISP_N);   
+        tokenizer.add(RSVP_SET,  RSVP_SET_N );   
+        tokenizer.add(RSVP_RETU, RSVP_RETU_N);
+        tokenizer.add(RSVP_DEFI, RSVP_DEFI_N);
+        tokenizer.add(RSVP_IMPO, RSVP_IMPO_N);
+        tokenizer.add(RSVP_DO  , RSVP_DO_N  );
+        tokenizer.add(RSVP_COLO, RSVP_COLO_N);
         
         //======================================================================
         //Operators
         //======================================================================
     
-        tokenizer.add(LITERAL_INTEGER,      5030); 
-        tokenizer.add(EQ_OPERATOR,          5031);
-        tokenizer.add(LE_OPERATOR,          5032);   
-        tokenizer.add(LT_OPERATOR,          5033);   
-        tokenizer.add(GE_OPERATOR,          5034);     
-        tokenizer.add(GT_OPERATOR,          5035);    
-        tokenizer.add(NE_OPERATOR,          5036); 
-        tokenizer.add(ASSIGNMENT_OPERATOR,  5037); 
-        tokenizer.add(ADD_OPERATOR,         5038);  
-        tokenizer.add(SUB_OPERATOR,         5039);   
-        tokenizer.add(MUL_OPERATOR,         5048);   
-        tokenizer.add(DIV_OPERATOR,         5049);  
-        tokenizer.add(OPEN_BRACKET,         5042); 
-        tokenizer.add(CLOSE_BRACKET,        5043);
-        tokenizer.add(LITERAL_QUOTE,        5044);
-        tokenizer.add(LITERAL_COMMA,        5045);
-        tokenizer.add(LINE_COMMENT,         5041);
-        tokenizer.add(BEGIN_COMMENT,        5040);
-        tokenizer.add(END_COMMENT,          5046);
-        tokenizer.add(IDENTIFIER,           5047);
-        tokenizer.add(OPEN_BRACE,           5050);
-        tokenizer.add(CLOSE_BRACE,          5054);
-        tokenizer.add(WHITE_SPACE,          5055);
-        tokenizer.add(DOT_PTS,              5056);
-        tokenizer.add(POW_OPERATOR,         5057);
+        tokenizer.add(LITERAL_INTEGER,      LITERAL_INTEGER_N); 
+        tokenizer.add(EQ_OPERATOR,          EQ_OPERATOR_N);
+        tokenizer.add(LE_OPERATOR,          LE_OPERATOR_N);   
+        tokenizer.add(LT_OPERATOR,          LT_OPERATOR_N);   
+        tokenizer.add(GE_OPERATOR,          GE_OPERATOR_N);     
+        tokenizer.add(GT_OPERATOR,          GT_OPERATOR_N);    
+        tokenizer.add(NE_OPERATOR,          NE_OPERATOR_N); 
+        tokenizer.add(ASSIGNMENT_OPERATOR,  ASSIGNMENT_OPERATOR_N); 
+        tokenizer.add(ADD_OPERATOR,         ADD_OPERATOR_N);  
+        tokenizer.add(SUB_OPERATOR,         SUB_OPERATOR_N);   
+        tokenizer.add(MUL_OPERATOR,         MUL_OPERATOR_N);   
+        tokenizer.add(DIV_OPERATOR,         DIV_OPERATOR_N);  
+        tokenizer.add(OPEN_BRACKET,         OPEN_BRACKET_N); 
+        tokenizer.add(CLOSE_BRACKET,        CLOSE_BRACKET_N);
+        tokenizer.add(LITERAL_QUOTE,        LITERAL_QUOTE_N);
+        tokenizer.add(LITERAL_COMMA,        LITERAL_COMMA_N);
+        tokenizer.add(LINE_COMMENT,         LINE_COMMENT_N);
+        tokenizer.add(BEGIN_COMMENT,        BEGIN_COMMENT_N);
+        tokenizer.add(END_COMMENT,          END_COMMENT_N);
+        tokenizer.add(IDENTIFIER,           IDENTIFIER_N);
+        tokenizer.add(OPEN_BRACE,           OPEN_BRACE_N);
+        tokenizer.add(CLOSE_BRACE,          CLOSE_BRACE_N);
+        tokenizer.add(WHITE_SPACE,          WHITE_SPACE_N);
+        tokenizer.add(DOT_PTS,              DOT_PTS_N);
+        tokenizer.add(POW_OPERATOR,         POW_OPERATOR_N);
         tokenizer.add(OTHERS,               6000);
         
         
