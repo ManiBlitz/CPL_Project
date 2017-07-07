@@ -110,6 +110,12 @@ public class Tokenizer {
     private static final String RSVP_IMPO = "import";
     private static final String RSVP_COLO = ":";
     private static final String RSVP_DO   = "do";
+    private static final String RSVP_VARI = "variable";
+    private static final String RSVP_WHIL = "while";
+    private static final String RSVP_ENDW = "endwhile";
+    private static final String RSVP_SHOR = "short";
+    private static final String RSVP_MVOI = "mvoid";
+    private static final String RSVP_DESC = "description";
     
     //==========================================================================
     //LEXICAL RULES NUMBERS
@@ -184,6 +190,13 @@ public class Tokenizer {
     public static final int RSVP_IMPO_N = 5051;
     public static final int RSVP_COLO_N = 5053;
     public static final int RSVP_DO_N   = 5052;
+    public static final int RSVP_VARI_N = 5057;
+    public static final int RSVP_WHIL_N = 5058;
+    public static final int RSVP_ENDW_N = 5059;
+    public static final int RSVP_SHOR_N = 5060;
+    public static final int RSVP_MVOI_N = 5061;
+    public static final int RSVP_DESC_N = 5062;
+    
     
     
     //==========================================================================
@@ -331,6 +344,12 @@ public class Tokenizer {
         tokenizer.add(RSVP_IMPO, RSVP_IMPO_N);
         tokenizer.add(RSVP_DO  , RSVP_DO_N  );
         tokenizer.add(RSVP_COLO, RSVP_COLO_N);
+        tokenizer.add(RSVP_VARI, RSVP_VARI_N);
+        tokenizer.add(RSVP_WHIL, RSVP_WHIL_N);
+        tokenizer.add(RSVP_ENDW, RSVP_ENDW_N);
+        tokenizer.add(RSVP_SHOR, RSVP_SHOR_N);
+        tokenizer.add(RSVP_MVOI, RSVP_MVOI_N);
+        tokenizer.add(RSVP_DESC, RSVP_DESC_N);
         
         //======================================================================
         //Operators
@@ -381,7 +400,7 @@ public class Tokenizer {
         Tokenizer tokenizer = initTokenizer();
         
         try {
-            tokenizer.tokenize("function result = text + 5 + [result]",9);
+            tokenizer.tokenize("define varm2 array[MM] of type integer",9);
 
             for (Token tok : tokenizer.getTokens()) {
                 System.out.println("row: "+tok.row_num+ " , col: " + tok.col_num + " | token_code: " + tok.token + " | token_sequence: " + tok.sequence);
