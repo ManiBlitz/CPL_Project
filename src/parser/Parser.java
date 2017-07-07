@@ -58,14 +58,17 @@ public class Parser {
     }
     
     private void symbols(){
-        //symbols();
         symbol_def();
+        while(lookahead.token == Tokenizer.RSVP_SYMB_N){
+            symbols();
+        }
     }
     
     private void symbol_def(){
         if(lookahead.token == Tokenizer.RSVP_SYMB_N){
             nextToken();
             identifier();
+            nextToken();
         }else{
             line_exception();
         }
@@ -103,11 +106,17 @@ public class Parser {
     
     private void foward_list(){
         fowards();
+        while(lookahead.token == Tokenizer.RSVP_FUNC_N||
+                lookahead.token == Tokenizer.RSVP_MAIN_N){
+            
+            fowards();
+            
+        }
     }
     
     private void fowards(){
         func_main();
-        dec_parameters();
+        //dec_parameters();
     }
     
     private void func_main(){
@@ -117,7 +126,6 @@ public class Parser {
             oper_type();
         }else if(lookahead.token == Tokenizer.RSVP_MAIN_N){
             nextToken();
-            //dec_main();
         }else{
             
         }
@@ -148,10 +156,14 @@ public class Parser {
     }
     
     private void array_dim_list(){
-        //array_dim_list();
         lb();
         array_index();
         rb();
+        while(lookahead.token == Tokenizer.OPEN_BRACE_N){
+            lb();
+            array_index();
+            rb();
+        }
     }
     
     private void lb(){
@@ -217,8 +229,10 @@ public class Parser {
     }
     
     private void spec_list(){
-        //spec_list();
         spec_def();
+        while(lookahead.token == Tokenizer.RSVP_ENUM_N || lookahead.token == Tokenizer.RSVP_STRU_N){
+            spec_def();
+        }
     }
     
     private void spec_def(){
@@ -260,12 +274,20 @@ public class Parser {
     }
     
     private void const_list(){
-        //const_list()
         define();
         identifier();
-        rec_type();
+        //rec_type();
         equal_op();
         constant_val();
+        ret_type();
+        while(lookahead.token == Tokenizer.RSVP_DEFI_N){
+            define();
+            identifier();
+            //rec_type();
+            equal_op();
+            constant_val();
+            ret_type();
+        }
     }
     
     private void equal_op(){
@@ -294,10 +316,16 @@ public class Parser {
     }
     
     private void var_list(){
-        //var_list();
         define();
         identifier();
-        rec_type();
+        //rec_type();
+        ret_type();
+        while(lookahead.token == Tokenizer.RSVP_DEFI_N){
+            define();
+            identifier();
+            //rec_type();
+            ret_type();
+        }
     }
     
     private void implement(){
@@ -310,8 +338,10 @@ public class Parser {
     }
     
     private void funct_list(){
-        //funct_list()
         funct_def();
+        while(lookahead.token == Tokenizer.RSVP_FUNC_N){
+            funct_def();
+        }
     }
     
     private void funct_def(){
@@ -348,11 +378,12 @@ public class Parser {
     }
     
     private void param_list(){
-        //paramlist()
-        if(lookahead.token == Tokenizer.LITERAL_COMMA_N){
-            nextToken();
+        param_def();
+        while(lookahead.token == Tokenizer.LITERAL_COMMA_N){
+            comma();
             param_def();
         }
+        
     }
     
     private void param_def(){
@@ -404,8 +435,16 @@ public class Parser {
     }
     
     private void statement_list(){
-        //statement_list();
         statement();
+        while(lookahead.token == Tokenizer.RSVP_IF_N ||
+                lookahead.token == Tokenizer.RSVP_REPE_N||
+                lookahead.token == Tokenizer.RSVP_SET_N||
+                lookahead.token == Tokenizer.RSVP_WHIL_N||
+                lookahead.token == Tokenizer.RSVP_PRIN_N){
+            
+            statement();
+            
+        }
     }
     
     private void statement(){
@@ -547,9 +586,11 @@ public class Parser {
     }
     
     private void arg_list(){
-        //arg_list();
-        comma();
         args();
+        while(lookahead.token == Tokenizer.LITERAL_COMMA_N){
+            comma();
+            args();
+        }
     }
     
     private void comma(){
@@ -642,12 +683,21 @@ public class Parser {
     
     private void arithmetic_exp(){
         //arithmetic_exp();
+        
+        mulexp();
         if(lookahead.token == Tokenizer.ADD_OPERATOR_N){
             add_operator();
         }else if(lookahead.token == Tokenizer.SUB_OPERATOR_N){
             sub_operator();
         }
-        mulexp();
+        while(lookahead.token == Tokenizer.OPEN_BRACKET_N||
+                lookahead.token == Tokenizer.SUB_OPERATOR_N||
+                lookahead.token == Tokenizer.IDENTIFIER_N||
+                lookahead.token == Tokenizer.LITERAL_INTEGER_N){
+            
+            mulexp();
+            
+        }
     }
     
     private void add_operator(){
@@ -667,13 +717,21 @@ public class Parser {
     }
     
     private void mulexp(){
-        //mulexp()
+        primary();
         if(lookahead.token == Tokenizer.MUL_OPERATOR_N){
             mul_operator();
         }else if(lookahead.token == Tokenizer.DIV_OPERATOR_N){
             div_operator();
         }
-        primary();
+        while(lookahead.token == Tokenizer.OPEN_BRACKET_N||
+                lookahead.token == Tokenizer.SUB_OPERATOR_N||
+                lookahead.token == Tokenizer.IDENTIFIER_N||
+                lookahead.token == Tokenizer.LITERAL_INTEGER_N){
+            
+            primary();
+            
+        }
+        
     }
     
     private void mul_operator(){
@@ -702,6 +760,8 @@ public class Parser {
             primary();
         }else if(lookahead.token == Tokenizer.IDENTIFIER_N){
             identifier();
+        }else if(lookahead.token == Tokenizer.LITERAL_INTEGER_N){
+            constant_val();
         }
     }
     
@@ -722,6 +782,14 @@ public class Parser {
     }
     
     private void minus(){
+        if(lookahead.token == Tokenizer.SUB_OPERATOR_N){
+            nextToken();
+        }else{
+            line_exception();
+        }
+    }
+    
+    private void constant_val(){
         if(lookahead.token == Tokenizer.SUB_OPERATOR_N){
             nextToken();
         }else{
