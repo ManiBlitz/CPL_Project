@@ -16,7 +16,6 @@ import scanner.Tokenizer;
  */
 public class Parser {
     LinkedList<Token> tokens;
-    //Tokenizer tokenizer = Tokenizer.initTokenizer();
     Token lookahead;
     final String ERROR_MESSAGE = "Unexpected Symbol: \"";
     final String ERROR_LINE = "\" at line ";
@@ -106,8 +105,7 @@ public class Parser {
     
     private void foward_list(){
         fowards();
-        while(lookahead.token == Tokenizer.RSVP_FUNC_N||
-                lookahead.token == Tokenizer.RSVP_MAIN_N){
+        while(lookahead.token == Tokenizer.RSVP_DESC_N){
             
             fowards();
             
@@ -115,8 +113,24 @@ public class Parser {
     }
     
     private void fowards(){
-        func_main();
-        //dec_parameters();
+        if(lookahead.token == Tokenizer.RSVP_DESC_N){
+            dec_parameters();
+            func_main();
+        }else{
+            
+        }
+    }
+    
+    private void dec_parameters(){
+        if(lookahead.token == Tokenizer.RSVP_DESC_N){
+            nextToken();
+            while(lookahead.token != Tokenizer.END_COMMENT_N){
+                nextToken();
+            }
+            nextToken();
+        }else{
+            line_exception();
+        }
     }
     
     private void func_main(){
@@ -208,12 +222,12 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_INTE_N){
             nextToken();
         }
-        /*else if(lookahead.token == Tokenizer.RSVP_SHORT){
+        else if(lookahead.token == Tokenizer.RSVP_SHOR_N){
             nextToken();
         }
-        else if(lookahead.token == Tokenizer.RSVP_MVOID){
+        else if(lookahead.token == Tokenizer.RSVP_MVOI_N){
             nextToken();
-        }*/
+        }
         else{
             line_exception();
         }
@@ -276,14 +290,12 @@ public class Parser {
     private void const_list(){
         define();
         identifier();
-        //rec_type();
         equal_op();
         constant_val();
         ret_type();
         while(lookahead.token == Tokenizer.RSVP_DEFI_N){
             define();
             identifier();
-            //rec_type();
             equal_op();
             constant_val();
             ret_type();
@@ -318,12 +330,10 @@ public class Parser {
     private void var_list(){
         define();
         identifier();
-        //rec_type();
         ret_type();
         while(lookahead.token == Tokenizer.RSVP_DEFI_N){
             define();
             identifier();
-            //rec_type();
             ret_type();
         }
     }
@@ -454,7 +464,7 @@ public class Parser {
             repeat_statement();
         }else if(lookahead.token == Tokenizer.RSVP_SET_N){
             assignment_statement();
-        }else if(lookahead.token == Tokenizer.RSVP_WHIL_N){//Define the WHILE RSVP
+        }else if(lookahead.token == Tokenizer.RSVP_WHIL_N){
             while_statement();
         }else if(lookahead.token == Tokenizer.RSVP_PRIN_N){
             print_statement();
@@ -522,7 +532,7 @@ public class Parser {
     }
     
     private void end_while(){
-        if(lookahead.token == Tokenizer.RSVP_ENDW_N){//Add endwhile to the rsvp
+        if(lookahead.token == Tokenizer.RSVP_ENDW_N){
             nextToken();
         }else{
             line_exception();
@@ -682,8 +692,6 @@ public class Parser {
     }
     
     private void arithmetic_exp(){
-        //arithmetic_exp();
-        
         mulexp();
         if(lookahead.token == Tokenizer.ADD_OPERATOR_N){
             add_operator();
