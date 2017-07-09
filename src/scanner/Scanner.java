@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
+import parser.Parser;
 
 
 /**
@@ -39,7 +41,7 @@ public class Scanner {
     // String file: contains the path to the file that has to be parsed
     // =========================================================================
     
-    public Scanner(String file) throws EOFException{
+    public Scanner(String file){
         
         
         this.filename = new File(file);
@@ -51,7 +53,8 @@ public class Scanner {
             // =================================================================
             String [] parts = this.filename.getAbsolutePath().split("[.]");
             if(!parts[1].equals("scl")){
-                throw new ParserException("\n\nNon valid file extension. Use a file with the extension \".scl\"");
+                throw new ParserException("\n\nNon valid file extension."
+                        + " Use a file with the extension \".scl\"");
             }
             
             scan();
@@ -61,9 +64,6 @@ public class Scanner {
         }catch (IOException e){
             System.out.println(e.getLocalizedMessage());
         }
-        
-        throw new EOFException("End of file");  /*To prevent the parser 
-                                                that we reached the EOF*/
         
             
     }
@@ -93,7 +93,23 @@ public class Scanner {
  
 	br.close();
         
+        System.out.println("\n\n\n//===================================="
+                + "====//\n  Scanner Result\n//=========================="
+                + "==============//\n\n");
         printTokens();
+        System.out.println("\n\n\n//===================================="
+                + "====//\n  Parser Result\n//=========================="
+                + "==============//\n\n");
+    }
+    
+    // =========================================================================
+    // Tokenizer getTokenList
+    // Returns the list of tokens found by the scanner
+    // This method will be used in the parser to get the different tokens
+    // =========================================================================
+    
+    public LinkedList<Token> getTokenList(){
+        return tokenizer.getTokens();
     }
     
     // =========================================================================
@@ -107,7 +123,9 @@ public class Scanner {
         
         for (Token tok : this.tokenizer.getTokens()) {
             if(tok.token!=5052 && tok.token!=5055){
-                System.out.println("row: " +tok.row_num+ " , col: " + tok.col_num + " | token_code: " + tok.token + " | token_sequence: " + tok.sequence);
+                System.out.println("row: " +tok.row_num+ " , col: " 
+                        + tok.col_num + " | token_code: " + tok.token 
+                        + " | token_sequence: " + tok.sequence);
             }
         }
         
@@ -122,12 +140,14 @@ public class Scanner {
     public static void main(String[]args){
         if(args.length==2){
             try{
-                Scanner scan = new Scanner(args[1]);
-            }catch(EOFException e){
-                System.out.println("\n\n //=============EOF==============//");
+                Scanner scan = new Scanner("sclex1.scl");
+                Parser parse = new Parser(scan.getTokenList());
+            }catch(ParserException e){
+                System.out.println(e.getMessage());
             }
         }else{
-            System.out.println("\n\n ===> Error while reading. No file as input. Please enter a file name with extension .scl");
+            System.out.println("\n\n ===> Error while reading. No file as "
+                    +"input. Please enter a file name with extension .scl");
         }
     }
     

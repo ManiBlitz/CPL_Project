@@ -68,6 +68,7 @@ public class Tokenizer {
     private static final String CLOSE_BRACE         = "[\\]]";
     private static final String WHITE_SPACE         = "[\t]+|[\r]+|[\f]+|[ ]+";
     private static final String DOT_PTS             = "[.]";
+    private static final String LITERAL_TEXT        = "[^\"\\\\\\r\\n]*(?:\\\\.[^\"\\\\\\r\\n]*)*";
     private static final String OTHERS              = ".+";
 
     //==========================================================================
@@ -79,7 +80,7 @@ public class Tokenizer {
     
     private static final String RSVP_SPEC = "specifications";
     private static final String RSVP_SYMB = "symbol";
-    private static final String RSVP_FOWA = "foward";
+    private static final String RSVP_FOWA = "forward";
     private static final String RSVP_REFE = "references";
     private static final String RSVP_FUNC = "function";
     private static final String RSVP_PRIN = "printer";
@@ -88,16 +89,18 @@ public class Tokenizer {
     private static final String RSVP_STRU = "struct";
     private static final String RSVP_INTE = "integer";
     private static final String RSVP_ENUM = "enum";
-    private static final String RSVP_GLOB = "glob";
+    private static final String RSVP_GLOB = "global";
     private static final String RSVP_DECL = "declarations";
     private static final String RSVP_IMPL = "implementations";
     private static final String RSVP_MAIN = "main";
     private static final String RSVP_PARA = "parameters";
-    private static final String RSVP_CONS = "constant";
-    private static final String RSVP_BEGI = "being";
+    private static final String RSVP_CONS = "constants";
+    private static final String RSVP_BEGI = "begin";
     private static final String RSVP_ENDF = "endfun";
     private static final String RSVP_ENDI = "endif";
     private static final String RSVP_IF   = "if";
+    private static final String RSVP_OF   = "of";
+    private static final String RSVP_IS   = "is";
     private static final String RSVP_THEN = "then";
     private static final String RSVP_ELSE = "else";
     private static final String RSVP_REPE = "repeat";
@@ -110,12 +113,17 @@ public class Tokenizer {
     private static final String RSVP_IMPO = "import";
     private static final String RSVP_COLO = ":";
     private static final String RSVP_DO   = "do";
-    private static final String RSVP_VARI = "variable";
+    private static final String RSVP_VARI = "variables";
     private static final String RSVP_WHIL = "while";
     private static final String RSVP_ENDW = "endwhile";
     private static final String RSVP_SHOR = "short";
     private static final String RSVP_MVOI = "mvoid";
     private static final String RSVP_DESC = "description";
+    private static final String RSVP_INPU = "input";
+    private static final String RSVP_FOR  = "for";
+    private static final String RSVP_TO   = "to";
+    private static final String RSVP_ENDO = "endfor";
+    private static final String RSVP_EXIT = "exit";
     
     //==========================================================================
     //LEXICAL RULES NUMBERS
@@ -149,6 +157,7 @@ public class Tokenizer {
     public static final int CLOSE_BRACE_N           = 5054;
     public static final int WHITE_SPACE_N           = 5055;
     public static final int DOT_PTS_N               = 5056;
+    public static final int LITERAL_TEXT_N          = 5066;
     
     //==========================================================================
     //RESERVED WORDS NUMBERS
@@ -196,6 +205,13 @@ public class Tokenizer {
     public static final int RSVP_SHOR_N = 5060;
     public static final int RSVP_MVOI_N = 5061;
     public static final int RSVP_DESC_N = 5062;
+    public static final int RSVP_IS_N   = 5063;
+    public static final int RSVP_OF_N   = 5064;
+    public static final int RSVP_INPU_N = 5065;
+    public static final int RSVP_FOR_N  = 5067;
+    public static final int RSVP_TO_N   = 5068;
+    public static final int RSVP_ENDO_N = 5069;
+    public static final int RSVP_EXIT_N = 5070;
     
     
     
@@ -350,6 +366,13 @@ public class Tokenizer {
         tokenizer.add(RSVP_SHOR, RSVP_SHOR_N);
         tokenizer.add(RSVP_MVOI, RSVP_MVOI_N);
         tokenizer.add(RSVP_DESC, RSVP_DESC_N);
+        tokenizer.add(RSVP_OF  , RSVP_OF_N  );
+        tokenizer.add(RSVP_IS  , RSVP_IS_N  );
+        tokenizer.add(RSVP_INPU, RSVP_INPU_N);
+        tokenizer.add(RSVP_FOR , RSVP_FOR_N );
+        tokenizer.add(RSVP_TO  , RSVP_TO_N  );
+        tokenizer.add(RSVP_ENDO, RSVP_ENDO_N);
+        tokenizer.add(RSVP_EXIT, RSVP_EXIT_N);
         
         //======================================================================
         //Operators
@@ -380,6 +403,7 @@ public class Tokenizer {
         tokenizer.add(WHITE_SPACE,          WHITE_SPACE_N);
         tokenizer.add(DOT_PTS,              DOT_PTS_N);
         tokenizer.add(POW_OPERATOR,         POW_OPERATOR_N);
+        tokenizer.add(LITERAL_TEXT,         LITERAL_TEXT_N);
         tokenizer.add(OTHERS,               6000);
         
         
