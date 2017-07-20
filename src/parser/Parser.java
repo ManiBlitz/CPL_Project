@@ -12,9 +12,15 @@
 package parser;
 
 import exceptionsPack.ParserException;
+import executer.ArithmeticExpression;
+import executer.BooleanExpression;
 import java.util.LinkedList;
 import scanner.Token;
 import scanner.Tokenizer;
+import statements.DisplayStatement;
+import statements.InputStatement;
+import statements.funct.Argument;
+import statements.funct.ArgumentsList;
 
 /**
  *
@@ -23,9 +29,10 @@ import scanner.Tokenizer;
 
 public class Parser {
     LinkedList<Token> tokens;
-    Token lookahead;
-    final String ERROR_MESSAGE = "\nUnexpected Symbol: \"";
-    final String ERROR_LINE = "\" at line ";
+    private Token lookahead;
+    private IdentifierTable id_table;
+    private final String ERROR_MESSAGE = "\nUnexpected Symbol: \"";
+    private final String ERROR_LINE = "\" at line ";
     
     
     // =========================================================================
@@ -35,8 +42,26 @@ public class Parser {
     // =========================================================================
     
     private void line_exception(){
+        
+        print_identifierTable();
+        
         throw new ParserException(ERROR_MESSAGE + lookahead.sequence + 
                                   ERROR_LINE + lookahead.row_num);
+    }
+    
+    // =========================================================================
+    // void print_identifierTable
+    // Generic function for printing the content of identifier table
+    // uses the instance variable id_table
+    // =========================================================================
+    
+    private void print_identifierTable(){
+        
+        System.out.println("\n\n\n//===================================="
+                + "====//\n  Identifier Table\n//=========================="
+                + "==============//\n\n");
+        this.id_table.print_table();
+        
     }
     
     // =========================================================================
@@ -57,6 +82,7 @@ public class Parser {
     
     public Parser(LinkedList<Token> tokens)
     {
+        this.id_table = new IdentifierTable();
         this.tokens = (LinkedList<Token>) tokens.clone();
         lookahead = this.tokens.getFirst();
         
@@ -408,6 +434,7 @@ public class Parser {
     
     private void params(){
         if(lookahead.token == Tokenizer.IDENTIFIER_N){
+            Identifier new_id = new Identifier(lookahead.sequence);
             prt("PARAMS",1016);
             nextToken();
             if(lookahead.token == Tokenizer.RSVP_ARRA_N){
@@ -415,7 +442,8 @@ public class Parser {
                 lb();
                 rb();
             }
-            ret_type();
+            ret_type(new_id);
+            this.id_table.addIdentifier(new_id);
         }
     }
     
@@ -432,8 +460,9 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_FUNC_N){
             prt("FUNC_MAIN",1017);
             nextToken();
+            Identifier new_id = new Identifier(lookahead.sequence);
             identifier();
-            oper_type();
+            oper_type(new_id);
         }else if(lookahead.token == Tokenizer.RSVP_MAIN_N){
             prt("FUNC_MAIN",1018);
             nextToken();
@@ -451,13 +480,13 @@ public class Parser {
     // oper_type: RETURN chk_ptr chk_array ret_type
     // =========================================================================
     
-    private void oper_type(){
+    private void oper_type(Identifier id){
         if(lookahead.token == Tokenizer.RSVP_RETU_N){
             prt("OPER_TYPE",1019);
             nextToken();
             chk_ptr();
             chk_array();
-            ret_type();
+            ret_type(id);
         }else{
             line_exception();
         }
@@ -574,11 +603,11 @@ public class Parser {
     // ret_type : TYPE type_name | STRUCT IDENTIFIER | STRUCTYPE IDENTIFIER 
     // =========================================================================
     
-    private void ret_type(){
+    private void ret_type(Identifier id){
         if(lookahead.token == Tokenizer.RSVP_TYPE_N){
             prt("RET_TYPE",1025);
             nextToken();
-            type_name();
+            type_name(id);
         }else if(lookahead.token == Tokenizer.RSVP_STRU_N){
             prt("RET_TYPE",1025);
             nextToken();
@@ -597,17 +626,20 @@ public class Parser {
     // ret_type : TYPE type_name | STRUCT IDENTIFIER | STRUCTYPE IDENTIFIER 
     // =========================================================================
     
-    private void type_name(){
+    private void type_name(Identifier id){
         if(lookahead.token == Tokenizer.RSVP_INTE_N){
             prt("TYPE_NAME",1026);
+            id.setType(1);
             nextToken();
         }
         else if(lookahead.token == Tokenizer.RSVP_SHOR_N){
             prt("TYPE_NAME",1026);
+            id.setType(3);
             nextToken();
         }
         else if(lookahead.token == Tokenizer.RSVP_MVOI_N){
             prt("TYPE_NAME",1026);
+            id.setType(4);
             nextToken();
         }
         else{
@@ -747,15 +779,18 @@ public class Parser {
     
     private void const_list(){
         define();
+        Identifier new_id = new Identifier(lookahead.sequence);
         identifier();
         if(lookahead.token == Tokenizer.ASSIGNMENT_OPERATOR_N)
             equal_op();
+        new_id.setValue(Integer.parseInt(lookahead.sequence));
         constant_val();
         of_dec();
-        ret_type();
+        ret_type(new_id);
         if(lookahead.token == Tokenizer.RSVP_DEFI_N){
             const_list();
         }
+        this.id_table.addIdentifier(new_id);
     }
     
     // =========================================================================
@@ -819,10 +854,12 @@ public class Parser {
     
     private void var_list(){
         define();
+        Identifier new_id = new Identifier(lookahead.sequence);
         identifier();
         chk_array();
         of_dec();
-        ret_type();
+        ret_type(new_id);
+        this.id_table.addIdentifier(new_id);
         if(lookahead.token == Tokenizer.RSVP_DEFI_N){
             var_list();
         }
@@ -969,12 +1006,14 @@ public class Parser {
     
     private void param_def(){
         prt("PARAM_DEF",1045);
+        Identifier new_id = new Identifier(lookahead.sequence);
         identifier();
         chk_const();
         chk_ptr();
         chk_array();
         of_dec();
-        ret_type();
+        ret_type(new_id);
+        this.id_table.addIdentifier(new_id);
     }
     
     // =========================================================================
@@ -1139,8 +1178,11 @@ public class Parser {
     
     private void verification(){
         prt("VERIFICATION",1052);
+        Identifier new_id = new Identifier(lookahead.sequence);
         identifier();
         equal_op();
+        new_id.setValue(Integer.parseInt(lookahead.sequence));
+        this.id_table.addIdentifier(new_id);
         constant_val();
         reach();
         do_statement();
@@ -1161,7 +1203,8 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_TO_N){
             prt("REACH",1053);
             nextToken();
-            arithmetic_exp();
+            ArithmeticExpression ae = new ArithmeticExpression();
+            arithmetic_exp(ae);
         }else{
             line_exception();
         }
@@ -1372,9 +1415,14 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_SET_N){
             prt("ASSIGNMENT_STATEMENT",1065);
             nextToken();
+            Identifier id = new Identifier(lookahead.sequence);
             identifier();
             assignment_operator();
-            arithmetic_exp();
+            ArithmeticExpression ae = new ArithmeticExpression();
+            arithmetic_exp(ae);
+            id.setValue(ArithmeticExpression.eval(ae));
+            this.id_table.addIdentifier(id);
+            
         }else{
             line_exception();
         }
@@ -1408,7 +1456,16 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_INPU_N){
             prt("INPUT_STATEMENT",1067);
             nextToken();
-            arg_list();
+            ArgumentsList al = new ArgumentsList();
+            quote();
+            text_value(al);
+            quote();
+            comma();
+            Identifier id = new Identifier(lookahead.sequence);
+            identifier();
+            InputStatement is = new InputStatement(al.getText(),id);
+            is.execute();
+            this.id_table.addIdentifier(id);
         }else{
             line_exception();
         }
@@ -1427,8 +1484,11 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_DISP_N){
             prt("PRINT_STATEMENT",1068);
             nextToken();
+            ArgumentsList al = new ArgumentsList();
             prt("ARG_LIST",1069);
-            arg_list();
+            arg_list(al);
+            DisplayStatement ps = new DisplayStatement(al);
+            ps.execute();
         }else{
             line_exception();
         }
@@ -1443,11 +1503,11 @@ public class Parser {
     // arg_list: args | args comma arg_list
     // =========================================================================
     
-    private void arg_list(){
-        args();
+    private void arg_list(ArgumentsList al){
+        args(al);
         if(lookahead.token == Tokenizer.LITERAL_COMMA_N){
             comma();
-            arg_list();
+            arg_list(al);
         }
     }
     
@@ -1476,9 +1536,13 @@ public class Parser {
     //      | constant_val
     // =========================================================================
     
-    private void args(){
+    private void args(ArgumentsList al){
         if(lookahead.token == Tokenizer.IDENTIFIER_N){
             prt("ARGS",1071);
+            Identifier id = new Identifier(lookahead.sequence);
+            id = this.id_table.searchIdentifier(id);
+            Argument ar = new Argument(id);
+            al.addArgument(ar);
             identifier();
             if(lookahead.token == Tokenizer.OPEN_BRACE_N){
                 array_dim_list();
@@ -1486,7 +1550,7 @@ public class Parser {
         }else if(lookahead.token == Tokenizer.LITERAL_QUOTE_N){
             prt("ARGS",1071);
             nextToken();
-            text_value();
+            text_value(al);
             quote();
         }else if(lookahead.token == Tokenizer.LITERAL_INTEGER_N){
             prt("ARGS",1071);
@@ -1508,9 +1572,16 @@ public class Parser {
     
     private void boolean_expression(){
         prt("BOOLEAN_EXPRESSION",1072);
-        arithmetic_exp();
+        ArithmeticExpression left_pane = new ArithmeticExpression();
+        arithmetic_exp(left_pane);
+        int operator = lookahead.token;
         relative_op();
-        arithmetic_exp();
+        ArithmeticExpression right_pane = new ArithmeticExpression();
+        arithmetic_exp(left_pane);
+        
+        BooleanExpression be = new BooleanExpression(left_pane, operator, right_pane);
+        
+        prt("*************The result of this boolean expression is "+be.evaluate(),1072);
     }
     
     // =========================================================================
@@ -1648,15 +1719,23 @@ public class Parser {
     //                      | mulexp
     // =========================================================================
     
-    private void arithmetic_exp(){
+    private void arithmetic_exp(ArithmeticExpression ae){
         prt("ARITHMETIC_EXPRESSION",1080);
-        mulexp();
+        ArithmeticExpression oper_conv = new ArithmeticExpression(Tokenizer.ADD_OPERATOR_N,"+");
+        ArithmeticExpression right_span = new ArithmeticExpression(Tokenizer.LITERAL_INTEGER_N,"0");
+        ae = oper_conv;
+        ae.setRightNode(right_span);
+        mulexp(ae.getLeftNode());
         if(lookahead.token == Tokenizer.ADD_OPERATOR_N){
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             add_operator();
-            arithmetic_exp();
+            arithmetic_exp(ae.getRightNode());
         }else if(lookahead.token == Tokenizer.SUB_OPERATOR_N){
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             sub_operator();
-            arithmetic_exp();
+            arithmetic_exp(ae.getRightNode());
         }
        
     }
@@ -1702,15 +1781,23 @@ public class Parser {
     //               | primary
     // =========================================================================
     
-    private void mulexp(){
+    private void mulexp(ArithmeticExpression ae){
         prt("MULEXP",1083);
-        primary();
+        ArithmeticExpression oper_conv = new ArithmeticExpression(Tokenizer.ADD_OPERATOR_N,"+");
+        ArithmeticExpression right_span = new ArithmeticExpression(Tokenizer.LITERAL_INTEGER_N,"0");
+        ae = oper_conv;
+        ae.setRightNode(right_span);
+        primary(ae.getLeftNode());
         if(lookahead.token == Tokenizer.MUL_OPERATOR_N){
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             mul_operator();
-            mulexp();
+            mulexp(ae.getRightNode());
         }else if(lookahead.token == Tokenizer.DIV_OPERATOR_N){
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             div_operator();
-            mulexp();
+            mulexp(ae.getRightNode());
         }
         
     }
@@ -1757,26 +1844,35 @@ public class Parser {
     //               | identifier
     // =========================================================================
     
-    private void primary(){
+    private void primary(ArithmeticExpression ae){
         if(lookahead.token == Tokenizer.OPEN_BRACKET_N){
             prt("PRIMARY",1086);
             left_paren();
-            arithmetic_exp();
+            arithmetic_exp(ae);
             right_paren();
         }else if(lookahead.token == Tokenizer.SUB_OPERATOR_N){
             prt("PRIMARY",1086);
+            ArithmeticExpression new_ae = new ArithmeticExpression(Tokenizer.LITERAL_INTEGER_N, "0");
+            ae.setLeftNode(new_ae);
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             minus();
-            primary();
+            primary(ae.getRightNode());
         }else if(lookahead.token == Tokenizer.IDENTIFIER_N){
             prt("PRIMARY",1086);
+            Identifier id = new Identifier(lookahead.sequence);
+            ae.setSequence(Integer.toString(this.id_table.getValueIdentifier(id)));
             identifier();
             if(lookahead.token == Tokenizer.OPEN_BRACKET_N){
+                ArgumentsList al = new ArgumentsList();
                 nextToken();
-                arg_list();
+                arg_list(al);
                 right_paren();
             }
         }else if(lookahead.token == Tokenizer.LITERAL_INTEGER_N){
             prt("PRIMARY",1086);
+            ae.setSequence(lookahead.sequence);
+            ae.setTokenCode(lookahead.token);
             constant_val();
         }else{
             line_exception();
@@ -1849,11 +1945,14 @@ public class Parser {
     // terminal
     // =========================================================================
     
-    private void text_value(){
+    private void text_value(ArgumentsList al){
         prt("TEXT_VALUE",1091);
+        Argument ar = new Argument("");
         while(lookahead.token != Tokenizer.LITERAL_QUOTE_N){
+            Argument.appendArg(ar, lookahead.sequence);
             nextToken();
         }
+        al.addArgument(ar);
     }
     
     // =========================================================================
@@ -1869,7 +1968,8 @@ public class Parser {
         if(lookahead.token == Tokenizer.RSVP_RETU_N){
             prt("EXIT_STATEMENT",1092);
             nextToken();
-            args();
+            ArgumentsList al = new ArgumentsList();
+            args(al);
         }else if(lookahead.token == Tokenizer.RSVP_EXIT_N){
             prt("EXIT_STATEMENT",1092);
             nextToken();
